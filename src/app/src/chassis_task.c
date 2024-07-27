@@ -35,17 +35,17 @@ const float vaEstimateKF_H[4] = {1.0f, 0.0f,
 /* Statistics */
 #define UP_ANGLE_ODD (-48.0f)
 #define UP_ANGLE_EVEN (180.0f - (-48.0f))
-#define UP_1 (58396.0f)
-#define UP_2 (17889.0f)
-#define UP_3 (51440.0f)
-#define UP_4 (22877.0f)
+#define UP_1 (19806.0f) //(58396.0f) // 19806
+#define UP_2 (53819.0f - 65536.0f) //(17889.0f) // 53819
+#define UP_3 (32624.0f) //(51440.0f) // 32624
+#define UP_4 (36213.0f) //(22877.0f) // 36213
 
 #define DOWN_ANGLE_ODD (87.0f)
 #define DOWN_ANGLE_EVEN (180.0f - 87.0f)
-#define DOWN_1 (33540.0f)
-#define DOWN_2 (42464.0f)
-#define DOWN_3 (26586.0f)
-#define DOWN_4 (47774.0f)
+#define DOWN_1 (60722.0f - 65536.0f) // (33540.0f) // 60722
+#define DOWN_2 (12924.0f) // due to zero-crossing// (42464.0f) // 12924
+#define DOWN_3 (7939.0f) // (26586.0f) // 7939
+#define DOWN_4 (60973.0f) // (47774.0f) // 60973
 
 #define FOOT_MOTOR_MAX_TORQ (2.4f)
 #define FOOT_MF9025_MAX_TORQ_INT ((FOOT_MOTOR_MAX_TORQ / MF9025_TORQ_CONSTANT) / 16.5f * 2048.0f)
@@ -167,6 +167,7 @@ void _hip_motor_torq_ctrl(float torq_lf, float torq_lb, float torq_rb, float tor
     __MAX_LIMIT(torq3, -2000, 2000);
     __MAX_LIMIT(torq4, -2000, 2000);
     MF_Motor_Broadcast_Torq_Ctrl(1, torq1, torq2, torq3, torq4);
+    // MF_Motor_Broadcast_Torq_Ctrl(1, 0, 0, 0, 0);
 }
 
 void _foot_motor_torq_ctrl(float torq_left, float torq_right)
@@ -177,6 +178,9 @@ void _foot_motor_torq_ctrl(float torq_left, float torq_right)
     __MAX_LIMIT(torq_right, -FOOT_MF9025_MAX_TORQ_INT, FOOT_MF9025_MAX_TORQ_INT);
     MF_Motor_TorqueCtrl(g_left_foot_motor, torq_left_int);
     MF_Motor_TorqueCtrl(g_right_foot_motor, torq_right_int);
+    
+    // MF_Motor_TorqueCtrl(g_left_foot_motor, 0);
+    // MF_Motor_TorqueCtrl(g_right_foot_motor, 0);
 }
 
 void _foot_motor_init_offset()
@@ -291,14 +295,29 @@ if (g_imu.imu_ready_flag) {
 
 void _get_leg_statistics()
 {
-    g_leg_left.phi1 = ((g_motor_lb->stats->angle - DOWN_2) * ((UP_ANGLE_EVEN - DOWN_ANGLE_EVEN) / (UP_2 - DOWN_2)) + DOWN_ANGLE_EVEN) * DEG_TO_RAD;
+# pragma message "we are too lazy to write the legit function, if you see this, feel free to correct the angle overflow :)"
+    float angle_lf = g_motor_lf->stats->angle;
+    float angle_lb = g_motor_lb->stats->angle;
+    float angle_rb = g_motor_rb->stats->angle;
+    float angle_rf = g_motor_rf->stats->angle;
+#define MF8016_MAX_TICK (65536)
+    // 40000 is an arbitrary number, it is because the motor task space includes the zero-crosing point of the encoder
+    if (angle_lf > 40000)
+    {
+        angle_lf -= MF8016_MAX_TICK;
+    }
+    if (angle_lb > 40000)     {
+        angle_lb -= MF8016_MAX_TICK;
+    }
+
+    g_leg_left.phi1 = ((angle_lb - DOWN_2) * ((UP_ANGLE_EVEN - DOWN_ANGLE_EVEN) / (UP_2 - DOWN_2)) + DOWN_ANGLE_EVEN) * DEG_TO_RAD;
     // g_leg_left.phi1_dot = g_motor_lb->stats->velocity;
-    g_leg_left.phi4 = ((g_motor_lf->stats->angle - DOWN_1) * ((UP_ANGLE_ODD - DOWN_ANGLE_ODD) / (UP_1 - DOWN_1)) + DOWN_ANGLE_ODD) * DEG_TO_RAD;
+    g_leg_left.phi4 = ((angle_lf - DOWN_1) * ((UP_ANGLE_ODD - DOWN_ANGLE_ODD) / (UP_1 - DOWN_1)) + DOWN_ANGLE_ODD) * DEG_TO_RAD;
     // g_leg_left.phi4_dot = g_motor_lf->stats->velocity;
 
-    g_leg_right.phi1 = ((g_motor_rf->stats->angle - DOWN_4) * ((UP_ANGLE_EVEN - DOWN_ANGLE_EVEN) / (UP_4 - DOWN_4)) + DOWN_ANGLE_EVEN) * DEG_TO_RAD;
+    g_leg_right.phi1 = ((angle_rf - DOWN_4) * ((UP_ANGLE_EVEN - DOWN_ANGLE_EVEN) / (UP_4 - DOWN_4)) + DOWN_ANGLE_EVEN) * DEG_TO_RAD;
     // g_leg_right.phi1_dot = g_motor_rf->stats->velocity;
-    g_leg_right.phi4 = ((g_motor_rb->stats->angle - DOWN_3) * ((UP_ANGLE_ODD - DOWN_ANGLE_ODD) / (UP_3 - DOWN_3)) + DOWN_ANGLE_ODD) * DEG_TO_RAD;
+    g_leg_right.phi4 = ((angle_rb - DOWN_3) * ((UP_ANGLE_ODD - DOWN_ANGLE_ODD) / (UP_3 - DOWN_3)) + DOWN_ANGLE_ODD) * DEG_TO_RAD;
     // g_leg_right.phi4_dot = g_motor_rb->stats->velocity;
 }
 
@@ -324,7 +343,7 @@ void _target_state_update(Remote_t *remote, float forward_speed, float turning_s
 
 void _leg_length_controller(float chassis_height)
 {
-    float feedforward_weight = 90.0f;
+    float feedforward_weight = 40.0f;
     // g_leg_left.compensatioin_torq = -g_chassis.centripetal_force * 0.5f;
     // g_leg_right.compensatioin_torq = +g_chassis.centripetal_force * 0.5f;
 
@@ -356,9 +375,9 @@ void _vmc_torq_calc()
     Leg_VMC(&g_leg_left);
     Leg_VMC(&g_leg_right);
 
-    PID_dt(&g_pid_yaw_angle, g_chassis.current_yaw - g_chassis.target_yaw, TASK_TIME);
-    g_u_left.T_A -= g_pid_yaw_angle.output;
-    g_u_right.T_A += g_pid_yaw_angle.output;
+    // PID_dt(&g_pid_yaw_angle, g_chassis.current_yaw - g_chassis.target_yaw, TASK_TIME);
+    // g_u_left.T_A -= g_pid_yaw_angle.output;
+    // g_u_right.T_A += g_pid_yaw_angle.output;
 }
 
 void Chassis_Disable()

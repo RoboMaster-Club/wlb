@@ -161,6 +161,7 @@ void Robot_Cmd_Loop()
                 if (g_key_prev.prev_left_switch != DOWN)
                 { // if previous state is not mid change, this allows keyboard to toggle spin top mode
                     g_robot_state.spintop_mode = 0;
+                    g_launch_target.flywheel_enabled = 0;
                 }
             }
             else if (g_remote.controller.left_switch == MID)
@@ -168,6 +169,7 @@ void Robot_Cmd_Loop()
                 if (g_key_prev.prev_left_switch != MID)
                 { // if previous state is not mid change, this allows keyboard to toggle spin top mode
                     g_robot_state.spintop_mode = 1;
+
                 }
             }
             else if (g_remote.controller.left_switch == UP) // launch on - off
@@ -175,6 +177,7 @@ void Robot_Cmd_Loop()
                 if (g_key_prev.prev_left_switch != UP)
                 { // if previous state is not mid change, this allows keyboard to toggle spin top mode
                     g_robot_state.spintop_mode = 0;
+                    g_launch_target.flywheel_enabled = 1;
                 }
                 g_launch_target.flywheel_enabled = 1;
             }
@@ -235,16 +238,16 @@ void Robot_Cmd_Loop()
             if (1)
             {
                 g_launch_target.prev_burst_launch_flag = g_launch_target.burst_launch_flag;
-                if (g_remote.controller.wheel < -50.0f)
+                if (g_remote.controller.left_switch == MID && g_key_prev.prev_left_switch == UP)
                 { // dial wheel forward single fire
-                    g_launch_target.single_launch_flag = 1;
-                    g_launch_target.burst_launch_flag = 0;
-                }
-                else if ((g_remote.controller.wheel > 50.0f) || (g_remote.mouse.left == 1) || (g_remote.mouse.right == 1))
-                { // dial wheel backward burst fire
                     g_launch_target.single_launch_flag = 0;
                     g_launch_target.burst_launch_flag = 1;
                 }
+                // else if ((g_remote.controller.wheel > 50.0f) || (g_remote.mouse.left == 1) || (g_remote.mouse.right == 1))
+                // { // dial wheel backward burst fire
+                //     g_launch_target.single_launch_flag = 0;
+                //     g_launch_target.burst_launch_flag = 1;
+                // }
                 else
                 { // dial wheel mid stop fire
                     g_launch_target.single_launch_flag = 0;
@@ -320,6 +323,7 @@ void Robot_Cmd_Loop()
             g_key_prev.prev_E = g_remote.keyboard.E;
             g_key_prev.prev_R = g_remote.keyboard.R;
             g_key_prev.prev_right_switch = g_remote.controller.right_switch;
+            g_key_prev.prev_left_switch = g_remote.controller.left_switch;
             /* Keyboard Toggles Start Here */
 
             /* AutoAiming Flag, not used only for debug */

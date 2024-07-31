@@ -41,8 +41,8 @@ void Gimbal_Task_Init()
 {
     Motor_Config_t yaw_motor_config = {
         .can_bus = 1,
-        .speed_controller_id = 6,
-        .offset = 870,
+        .speed_controller_id = 3,
+        .offset = 7685,
         .control_mode = POSITION_VELOCITY_SERIES,
         .motor_reversal = MOTOR_REVERSAL_NORMAL,
         .use_external_feedback = 1,
@@ -69,7 +69,7 @@ void Gimbal_Task_Init()
     Motor_Config_t pitch_motor_config = {
         .can_bus = 1,
         .speed_controller_id = 7,
-        .offset = 6170,
+        .offset = 3235,
         .use_external_feedback = 1,
         .external_feedback_dir = 1,
         .external_angle_feedback_ptr = &g_imu.rad.pitch, // pitch

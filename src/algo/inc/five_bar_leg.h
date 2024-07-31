@@ -38,9 +38,11 @@ typedef struct leg
     float compensatioin_torq;
     float target_length;
     uint32_t current_tick, last_tick;
+    float normal_force;
+    float actual_virtual_torq;
 } Leg_t;
 
 void Leg_ForwardKinematics(Leg_t *leg, float phi1, float phi2, float phi1_dot, float phi2_dot);
 void Leg_InverseKinematics(float height, float leg_angle, float *leg_1, float *leg_2);
-void Leg_VMC(Leg_t *leg);
+void Leg_VMC(Leg_t *leg, float torq1, float torq4);
 #endif

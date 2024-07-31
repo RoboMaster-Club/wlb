@@ -60,7 +60,7 @@ void Leg_InverseKinematics(float height, float leg_angle, float *leg_1, float *l
     *leg_2 = -(2 * (*leg_2) - PI);
 }
 
-void Leg_VMC(Leg_t *leg)
+void Leg_VMC(Leg_t *leg, float torq1, float torq4)
 {
     // float leg_length = leg->length;
     // float theta = leg->phi0 - PI / 2;
@@ -112,4 +112,12 @@ void Leg_VMC(Leg_t *leg)
 
     leg->torq1 = j11 * leg->target_leg_virtual_force + j12 * leg->target_leg_virtual_torq;
     leg->torq4 = j21 * leg->target_leg_virtual_force + j22 * leg->target_leg_virtual_torq;
+
+    float det = j11 * j22 - j12 * j21;
+    float j11_inv = j22 / det;
+    float j12_inv = -j12 / det;
+    float j21_inv = -j21 / det;
+    float j22_inv = j11 / det;
+    leg->normal_force = leg->normal_force * 0.95f + 0.05f * (j11_inv * torq1 + j12_inv * torq4); // normal force calculated using the actual torq current
+    leg->actual_virtual_torq = leg->actual_virtual_torq * 0.95f + 0.05f * (j21_inv * torq1 + j22_inv * torq4); // virtual torq calculated using the actual torq current
 }

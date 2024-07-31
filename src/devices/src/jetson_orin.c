@@ -104,5 +104,5 @@ void Jetson_Orin_Send_Data(void)
 	g_orin_data.tx_buffer[1] = g_orin_data.sending.enemy_color_flag << 1 | g_orin_data.sending.game_start_flag;
 	memcpy(&g_orin_data.tx_buffer[2],&g_orin_data.sending.float_byte.data_bytes[0], 32*sizeof(uint8_t));
 	
-	UART_Transmit(g_orin_uart_instance_ptr, g_orin_data.tx_buffer, sizeof(g_orin_data.tx_buffer), UART_DMA);
+	// UART_Transmit(g_orin_uart_instance_ptr, g_orin_data.tx_buffer, sizeof(g_orin_data.tx_buffer), UART_DMA);
 }

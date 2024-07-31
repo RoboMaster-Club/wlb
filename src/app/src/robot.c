@@ -60,7 +60,7 @@ void Robot_Init()
     Launch_Task_Init();
     Remote_Init(&huart3);
     Referee_System_Init(&huart1);
-    Jetson_Orin_Init(&huart6);
+    // Jetson_Orin_Init(&huart6);
 #else
     Melody_t system_init_melody = {
         .notes = SYSTEM_READY,

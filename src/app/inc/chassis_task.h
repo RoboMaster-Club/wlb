@@ -17,7 +17,17 @@ typedef struct chassis_s
     float angle_diff;
     float forward_speed;
     uint8_t chassis_killed_by_referee;
+    float roll_compensation_height;
 } Chassis_t;
+
+typedef struct jump_state_machine_s
+{
+    uint8_t flag_jump_start;
+    uint8_t flag_retracted;
+    uint8_t flag_extended;
+    uint8_t flag_reretracted;
+    uint8_t flag_reextended;
+} Jump_State_Machine_t;
 
 // Function prototypes
 void Chassis_Task_Init(void);

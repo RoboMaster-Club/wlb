@@ -168,7 +168,7 @@ void Robot_Cmd_Loop()
             {
                 if (g_key_prev.prev_left_switch != MID)
                 { // if previous state is not mid change, this allows keyboard to toggle spin top mode
-                    g_robot_state.spintop_mode = 1;
+                    // g_robot_state.spintop_mode = 0;
 
                 }
             }
@@ -181,12 +181,13 @@ void Robot_Cmd_Loop()
                 }
                 g_launch_target.flywheel_enabled = 1;
             }
-            g_key_prev.prev_left_switch = g_remote.controller.left_switch;
+            //g_key_prev.prev_left_switch = g_remote.controller.left_switch;
 
             // this does not interfere with remote control
             if (g_remote.controller.right_switch != UP)
             {
-                g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * g_chassis_height_arr[g_current_height_index];
+                // g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * g_chassis_height_arr[g_current_height_index];
+                g_robot_state.spintop_mode = 0;
             }
             /* Chassis ends here */
 
@@ -203,7 +204,8 @@ void Robot_Cmd_Loop()
             }
             if ((g_remote.controller.right_switch == UP))
             {
-                g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * 0.35f;
+                // g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * 0.35f;
+                g_robot_state.spintop_mode = 1;
             }
             else if (g_remote.controller.right_switch == MID)
             {
@@ -238,7 +240,7 @@ void Robot_Cmd_Loop()
             if (1)
             {
                 g_launch_target.prev_burst_launch_flag = g_launch_target.burst_launch_flag;
-                if (g_remote.controller.left_switch == MID && g_key_prev.prev_left_switch == UP)
+                if (g_remote.controller.left_switch == MID)
                 { // dial wheel forward single fire
                     g_launch_target.single_launch_flag = 0;
                     g_launch_target.burst_launch_flag = 1;
@@ -260,9 +262,7 @@ void Robot_Cmd_Loop()
                 }
                 // reverse 1 projectile each time after shooting
                 g_launch_target.prev_reverse_flag = g_launch_target.reverse_flag;
-                if ((g_remote.keyboard.R == 1 && g_key_prev.prev_R == 0) 
-                || (g_remote.controller.wheel < -50.0f && g_launch_target.flywheel_enabled) || 
-                (!g_launch_target.burst_launch_flag && g_launch_target.prev_burst_launch_flag))
+                if ((g_remote.keyboard.R == 1 && g_key_prev.prev_R == 0) || (!g_launch_target.burst_launch_flag && g_launch_target.prev_burst_launch_flag))
                 {
                     g_launch_target.reverse_flag = 1;
                     g_launch_target.calculated_heat = Referee_Robot_State.Shooter_Heat_1;

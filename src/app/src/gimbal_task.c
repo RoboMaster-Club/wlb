@@ -67,7 +67,7 @@ void Gimbal_Task_Init()
     };
 
     Motor_Config_t pitch_motor_config = {
-        .can_bus = 1,
+        .can_bus = 2,
         .speed_controller_id = 7,
         .offset = 3235,
         .use_external_feedback = 1,

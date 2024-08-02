@@ -157,8 +157,8 @@ void Chassis_Task_Init()
     g_right_foot_motor = MF_Motor_Init(motor_config);
 
     MF_Motor_Broadcast_Init(1);
-    PID_Init(&g_pid_left_leg_length, 8500.0f, 0.0f, 350.0f, 50.0f, 0.0f, 0.0f);
-    PID_Init(&g_pid_right_leg_length, 8500.0f, 0.0f, 350.0f, 50.0f, 0.0f, 0.0f);
+    PID_Init(&g_pid_left_leg_length, 1000.0f, 0.0f, 300.0f, 400.0f, 0.0f, 0.0f);
+    PID_Init(&g_pid_right_leg_length, 1000.0f, 0.0f, 300.0f, 400.0f, 0.0f, 0.0f);
 
     PID_Init(&g_pid_left_leg_angle, 15.0f, 0.0f, 5.75f, 10.0f, 0.0f, 0.0f);
     PID_Init(&g_pid_right_leg_angle, 15.0f, 0.0f, 5.75f, 10.0f, 0.0f, 0.0f);
@@ -172,7 +172,7 @@ void Chassis_Task_Init()
     PID_Init(&g_pid_follow_gimbal, 8.0f, 0.0f, 0.95f, 6.0f, 0.0f, 0.0f);
     g_robot_state.chassis_height = CHASSIS_DEFAULT_HEIGHT;
 
-    PID_Init(&g_pid_roll_compensation, 0.1f, 0.0006f, 0.0f, 0.20f, 0.15f, 0.0f);
+    PID_Init(&g_pid_roll_compensation, 0.4f, 0.0000f, 0.0f, 0.20f, 0.15f, 0.0f);
     xvEstimateKF_Init(&vaEstimateKF);
 }
 
@@ -441,6 +441,12 @@ void _vmc_torq_calc()
     PID_dt(&g_pid_yaw_angle, g_chassis.current_yaw - g_chassis.target_yaw, TASK_TIME);
     g_u_left.T_A -= g_pid_yaw_angle.output;
     g_u_right.T_A += g_pid_yaw_angle.output;
+
+    if (g_robot_state.spintop_mode)
+    {
+        g_u_left.T_A -= (0.1f*(-1.0f));
+        g_u_right.T_A += 0.3f;
+    }
 }
 
 void Chassis_Disable()
@@ -524,7 +530,7 @@ void _chassis_cmd()
         // Spintop vs Follow Gimbal
     if (g_robot_state.spintop_mode)
     {
-        g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.9f + 0.1f * 6.0f;
+        g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.9f + 0.1f * -7.0f;
     }
     else if (g_robot_state.gimbal_switching_dir_pending == 1)
     {

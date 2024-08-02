@@ -28,7 +28,7 @@ extern DJI_Motor_Handle_t *g_yaw;
 #define MAX_SPEED (1.2f)
 
 Robot_State_t g_robot_state = {0, 0};
-float g_chassis_height_arr[4] = {0.13f, 0.20f, 0.28f, 0.35f};
+float g_chassis_height_arr[6] = {0.15f, 0.18f, 0.21f, 0.24f, 0.27f, 0.30f};
 int8_t g_current_height_index = 0;
 Key_Prev_t g_key_prev = {0};
 extern Launch_Target_t g_launch_target;
@@ -186,7 +186,7 @@ void Robot_Cmd_Loop()
             // this does not interfere with remote control
             if (g_remote.controller.right_switch != UP)
             {
-                // g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * g_chassis_height_arr[g_current_height_index];
+                g_robot_state.chassis_height = g_robot_state.chassis_height * 0.99f + 0.01f * g_chassis_height_arr[g_current_height_index];
                 g_robot_state.spintop_mode = 0;
             }
             /* Chassis ends here */
@@ -245,11 +245,11 @@ void Robot_Cmd_Loop()
                     g_launch_target.single_launch_flag = 0;
                     g_launch_target.burst_launch_flag = 1;
                 }
-                // else if ((g_remote.controller.wheel > 50.0f) || (g_remote.mouse.left == 1) || (g_remote.mouse.right == 1))
-                // { // dial wheel backward burst fire
-                //     g_launch_target.single_launch_flag = 0;
-                //     g_launch_target.burst_launch_flag = 1;
-                // }
+                else if ((g_remote.mouse.left == 1) || (g_remote.mouse.right == 1))
+                { // dial wheel backward burst fire
+                    g_launch_target.single_launch_flag = 0;
+                    g_launch_target.burst_launch_flag = 1;
+                }
                 else
                 { // dial wheel mid stop fire
                     g_launch_target.single_launch_flag = 0;
@@ -302,13 +302,13 @@ void Robot_Cmd_Loop()
             {
                 // g_robot_state.chassis_height = g_robot_state.chassis_height * 0.995f + 0.05f * 0.30f;
                 g_current_height_index++;
-                __MAX_LIMIT(g_current_height_index, 0, 3);
+                __MAX_LIMIT(g_current_height_index, 0, 5);
             }
             if (g_remote.keyboard.C == 1 && g_key_prev.prev_C == 0)
             {
                 // g_robot_state.chassis_height = g_robot_state.chassis_height * 0.995f + 0.05f * 0.13f;
                 g_current_height_index--;
-                __MAX_LIMIT(g_current_height_index, 0, 3);
+                __MAX_LIMIT(g_current_height_index, 0, 5);
             }
             if (g_remote.controller.right_switch == MID && g_key_prev.prev_right_switch == UP)
             {

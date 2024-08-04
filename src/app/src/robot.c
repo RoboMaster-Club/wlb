@@ -16,6 +16,8 @@
 #include "Fusion.h"
 #include "robot_param.h"
 #include "board_comm_task.h"
+#include "laser.h"
+
 extern DJI_Motor_Handle_t *g_yaw;
 #define SPIN_TOP_OMEGA (1.0f)
 #define ROBOT_TASK_PERIOD (0.002f)
@@ -25,7 +27,7 @@ extern DJI_Motor_Handle_t *g_yaw;
 #define KEYBOARD_RAMP_COEF (0.005f)
 #define SPINTOP_COEF (0.003f)
 #define CONTROLLER_RAMP_COEF (0.8f)
-#define MAX_SPEED (1.2f)
+#define MAX_SPEED (.8f)
 
 Robot_State_t g_robot_state = {0, 0};
 float g_chassis_height_arr[6] = {0.15f, 0.18f, 0.21f, 0.24f, 0.27f, 0.30f};
@@ -44,6 +46,8 @@ void _toggle_robot_state(uint8_t *state);
 void Robot_Init()
 {
     Buzzer_Init();
+    HAL_TIM_Base_Start(&htim3);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
     FusionAhrsInitialise(&g_fusion_ahrs);
     CAN_Service_Init();
     Board_Comm_Task_Init();
@@ -101,11 +105,11 @@ void Robot_Cmd_Loop()
             g_launch_target.flywheel_enabled = 0;
             g_robot_state.gimbal_yaw_angle = g_imu.rad.yaw;
             g_current_height_index = 0;
+            Laser_Off();
         }
         else
         {
             g_robot_state.enabled = 1;
-
             /* Gimbal starts here */ // (Launch enable in last if statement)
             if (g_remote.keyboard.Shift == 1)
             {
@@ -148,11 +152,11 @@ void Robot_Cmd_Loop()
             {
                 g_robot_state.wheel_facing_mode = 0;
             }
-            if (g_remote.mouse.left == 1 && fabs(g_robot_state.chassis_y_speed) < 0.3f)
+            if (g_remote.mouse.left == 1 && fabs(g_robot_state.chassis_y_speed) < 0.1f)
             {
                 g_robot_state.wheel_facing_mode = 1;
             }
-            if (g_remote.mouse.right == 1 && fabs(g_robot_state.chassis_x_speed) < 0.3f)
+            if (g_remote.mouse.right == 1 && fabs(g_robot_state.chassis_x_speed) < 0.1f)
             {
                 g_robot_state.wheel_facing_mode = 0;
             }
@@ -240,7 +244,7 @@ void Robot_Cmd_Loop()
             if (1)
             {
                 g_launch_target.prev_burst_launch_flag = g_launch_target.burst_launch_flag;
-                if (g_remote.controller.left_switch == MID)
+                if (g_remote.controller.left_switch == MID && g_remote.controller.right_switch != UP)
                 { // dial wheel forward single fire
                     g_launch_target.single_launch_flag = 0;
                     g_launch_target.burst_launch_flag = 1;
@@ -256,10 +260,10 @@ void Robot_Cmd_Loop()
                     g_launch_target.single_launch_finished_flag = 0;
                     g_launch_target.burst_launch_flag = 0;
                 }
-                if (g_launch_target.burst_launch_flag == 1)
-                {
-                    g_launch_target.flywheel_enabled = 1;
-                }
+                // if (g_launch_target.burst_launch_flag == 1)
+                // {
+                //     g_launch_target.flywheel_enabled = 1;
+                // }
                 // reverse 1 projectile each time after shooting
                 g_launch_target.prev_reverse_flag = g_launch_target.reverse_flag;
                 if ((g_remote.keyboard.R == 1 && g_key_prev.prev_R == 0) || (!g_launch_target.burst_launch_flag && g_launch_target.prev_burst_launch_flag))
@@ -281,6 +285,10 @@ void Robot_Cmd_Loop()
             {
                 g_launch_target.single_launch_flag = 0;
                 g_launch_target.single_launch_finished_flag = 0;
+                g_launch_target.burst_launch_flag = 0;
+            }
+            if (g_remote.controller.left_switch == UP && g_remote.controller.right_switch == UP) // turn off flywheel when spintop is on
+            {
                 g_launch_target.burst_launch_flag = 0;
             }
             /* Launch control ends here */
@@ -312,7 +320,7 @@ void Robot_Cmd_Loop()
             }
             if (g_remote.controller.right_switch == MID && g_key_prev.prev_right_switch == UP)
             {
-                g_robot_state.chassis_height = 0.13f;
+                g_robot_state.chassis_height = 0.15f;
             }
             g_key_prev.prev_B = g_remote.keyboard.B;
             g_key_prev.prev_G = g_remote.keyboard.G;
@@ -356,7 +364,7 @@ void Robot_Cmd_Loop()
     {
         // Ensure controller is down before enabling robot, ensure imu is initialized before enabling robot
 #ifdef MASTER
-        if ((g_remote.controller.right_switch == DOWN) && (g_imu.deg_fusion.pitch != 0.0f) && (g_imu.imu_ready_flag == 1) && (g_remote.controller.left_stick.y != -660) && g_board_comm_first_part_established == 1 && g_board_comm_second_part_established == 1)
+        if ((g_remote.controller.left_switch == DOWN) == (g_remote.controller.right_switch == DOWN) && (g_imu.deg_fusion.pitch != 0.0f) && (g_imu.imu_ready_flag == 1) && (g_remote.controller.left_stick.y != -660) && g_board_comm_first_part_established == 1 && g_board_comm_second_part_established == 1)
 #else
         if ((g_imu.deg_fusion.pitch != 0.0f) && (g_imu.imu_ready_flag == 1))
 #endif

@@ -166,7 +166,7 @@ void Chassis_Task_Init()
     PID_Init(&g_balance_angle_pid, 600.0f, 0.0f, .065f, 10.0f, 0.0f, 0.0f);
     PID_Init(&g_balance_vel_pid, 10.0f, 0.0f, 0.001f, 10.0f, 0.0f, 0.0f);
 
-    PID_Init(&g_pid_yaw_angle, 5.0f, 0.0f, 1.1f, 10.0f, 0.0f, 0.0f);
+    PID_Init(&g_pid_yaw_angle, 1.3f, 0.0f, 1.1f, 5.0f, 0.0f, 0.0f);
     PID_Init(&g_pid_anti_split, 100.0f, 0.0f, 5.0f, 40.0f, 0.0f, 0.0f);
 
     PID_Init(&g_pid_follow_gimbal, 8.0f, 0.0f, 0.95f, 6.0f, 0.0f, 0.0f);
@@ -530,7 +530,12 @@ void _chassis_cmd()
         // Spintop vs Follow Gimbal
     if (g_robot_state.spintop_mode)
     {
-        g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.9f + 0.1f * -7.0f;
+        if (g_remote.controller.left_switch == MID)
+        {
+            g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.9f + 0.1f * 4.0f;
+        } else {
+            g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.9f + 0.1f * -4.0f;
+        }
     }
     else if (g_robot_state.gimbal_switching_dir_pending == 1)
     {
@@ -538,7 +543,7 @@ void _chassis_cmd()
     }
     else
     {
-        g_chassis.target_yaw_speed = PID_dt(&g_pid_follow_gimbal, g_chassis.angle_diff, TASK_TIME);
+        g_chassis.target_yaw_speed = g_chassis.target_yaw_speed * 0.95f + 0.05f * PID_dt(&g_pid_follow_gimbal, g_chassis.angle_diff, TASK_TIME);
     }
 
     // this interfere with shooting//g_robot_state.chassis_height += g_remote.controller.wheel / 660.0f * 0.003f;

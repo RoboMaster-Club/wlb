@@ -5,6 +5,7 @@
 #include "imu_task.h"
 #include "user_math.h"
 #include "referee_system.h"
+#include "laser.h"
 
 extern Robot_State_t g_robot_state;
 extern Remote_t g_remote;
@@ -90,6 +91,14 @@ void Launch_Ctrl_Loop() {
 
 void Feed_Angle_Calc()
 {
+    // laser
+    if (g_launch_target.flywheel_enabled)
+    {
+        Laser_On();
+    } else {
+        Laser_Off();
+    }
+
     // Update Counter
     g_launch_target.heat_count++;
     g_launch_target.launch_freq_count++;
@@ -122,7 +131,7 @@ void Feed_Angle_Calc()
             // if (g_launch_target.reverse_burst_launch_pending_flag)
             {
                 // g_launch_target.reverse_burst_launch_pending_flag = 0;
-                g_launch_target.feed_angle -= FEED_1_PROJECTILE_ANGLE;
+                g_launch_target.feed_angle -= FEED_1_PROJECTILE_ANGLE * 0.4f;
                 DJI_Motor_Set_Control_Mode(g_motor_feed, POSITION_CONTROL_TOTAL_ANGLE);
                 DJI_Motor_Set_Angle(g_motor_feed,g_launch_target.feed_angle);
             

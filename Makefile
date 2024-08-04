@@ -139,6 +139,7 @@ src/devices/src/remote.c \
 src/devices/src/imu_task.c \
 src/devices/src/referee_system.c \
 src/devices/src/jetson_orin.c \
+src/devices/src/laser.c \
 src/app/src/motor_task.c \
 src/app/src/chassis_task.c \
 src/app/src/gimbal_task.c \

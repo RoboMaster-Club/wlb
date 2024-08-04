@@ -85,7 +85,7 @@ void Gimbal_Task_Init()
         .velocity_pid =
             {
                 .kp = 4500.0f,
-                .ki = 0.8f,
+                .ki = 1.8f,
                 .integral_limit = 4000.0f,
                 .output_limit = GM6020_MAX_CURRENT,
             },

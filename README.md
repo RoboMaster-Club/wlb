@@ -1,11 +1,33 @@
-# Purdue Robomasters Control Base Template
-This repository contains the shared control code between Purdue Robomasters robots.
+# Wheeled Bipedal Robot
+This repository contains the control code for wheeled bipedal robot (WBR).
+
+## Demonstration
+<div align="center">
+  <img src="asset/demo_1_ramp.gif" alt="GIF 1" width="60%">
+</div>
+
+<div align="center">
+  <img src="asset/demo_2_disturbance_rejection.gif" alt="GIF 2" width="45%">
+  <img src="asset/demo_6_failure_case.gif" alt="GIF 3" width="45%">
+</div>
+
+<div align="center">
+  <img src="asset/demo_3_go_down_stairs.gif" alt="GIF 4" width="45%">
+  <img src="asset/demo_4_leg_adaptation.gif" alt="GIF 5" width="45%">
+</div>
+
+<div align="center">
+  <img src="asset/demo_5_slippage_resistance.gif" alt="GIF 6" width="45%">
+  <img src="asset/demo_7_failure_case_slipping.gif" alt="GIF 7" width="45%">
+</div>
+
+
 
 # Repository Initialization Guide
 ``` bash
-git clone https://github.com/RoboMaster-Club/control-base.git
-cd control-base
-git submodule update --init
+git clone https://github.com/RoboMaster-Club/wlb.git
+cd wlb
+git submodule update --init --recursive
 ```
 
 ## VSCode MAKEFILE environment setup guide
@@ -112,101 +134,3 @@ If you don't want to mess with the system path, you could also add local openocd
 "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/arm-none-eabi-gcc.exe"
 ```
 adding this would link the standard library header files, such as `stdint.h`, `stdlib.h`, `math.h`.
-
-# Development Conventions
-**All names must use snake_case.**
-
-Variable names are all lowercase.
-```c
- float example_float = 1.5f;
-```
-
-Macros should be all UPPERCASE, and enclosed by ()
-```c
- #define EXAMPLE_MACRO (3.14f)
-```
-
-Function names should capitalize the first letter of each word.
-```c
- float Example_Function() {}
-```
-
-typedef names should capitalize the first letter of each word and end in _t. 
-```c
-typedef struct _Example_Struct_s Example_Typedef_t {} 
-```
-
-Enum names should capitalized the first letter of each word and end in _e.
-```c
- enum Example_Enum_e {};
-```
-
-In general, indent code blocks for functions and if statments as such, but for switches put cases in the same line.
-```c
-void Example_Func()
-{
-   if (some_condition)
-   {
-      switch(some_num)
-      {
-      case 0:
-         break;
-      default:
-         break;
-      }
-   }
-}
-```
-
-For multiline macros, indent as such:
-```c
-#define YOUR_MACRO        \
-   {                      \
-        FIRST_LINE = 0,   \
-        SECOND_LINE = 1,  \
-        THIRD_LINE = 2,   \
-   }
-```
-
-
-# an example usage
-```C
-Motor_Config_t yaw_motor_config = {
-        // Comm Config
-        .can_bus = 1, // set can bus currently using
-        .speed_controller_id = 3,
-        .offset = 3690,
-        
-        // Motor Reversal Config (if motor is installed in 
-        // opposite direction, change to MOTOR_REVERSAL_REVERSED)
-        .motor_reversal = MOTOR_REVERSAL_NORMAL,
-        
-        //external sensor config
-        .use_external_feedback = 1,
-        .external_feedback_dir = 1, // 1 if the feedback matches with task space direction, 0 otherwise
-        .external_angle_feedback_ptr = &g_imu.rad.yaw, // assign the pointer to the external angle feedback
-        .external_velocity_feedback_ptr = &(g_imu.bmi088_raw.gyro[2]), // assign the poitner to the external velocity feedback
-        
-        // Controller Config
-        .control_mode = POSITION_CONTROL, // Control Mode, see control mode for detail
-        .angle_pid =
-            {
-                .kp = 20000.0f,
-                .kd = 1000000.0f,
-                .output_limit = GM6020_MAX_CURRENT,
-            },
-        .velocity_pid =
-            {
-                .kp = 500.0f,
-                .output_limit = GM6020_MAX_CURRENT,
-            },
-    };
-```
-
-## Modifications
-- Change ```samepleFreq``` in [MahonyAHRS.c](Algo/Src/MahonyAHRS.c?plain=1#L23), this will affect the fusion result
-- Initialize a task for imu in FreeRTOS environment
-
-## Debug SOP
-- Check IMU is attched firmly
-- Check remote functioning (especially the dial wheel)
